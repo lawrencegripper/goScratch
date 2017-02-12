@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -29,15 +30,20 @@ func StartAlertEngine(alerts []AlertModel) []QueryResult {
 
 func ExecuteQuery(alert AlertModel, resultsChan chan QueryResult) {
 
-	url := fmt.Sprintf("https://api.applicationinsights.io/beta/apps/%v/query?query=%v", os.Getenv(appInsightsAppId), alert.QueryText)
+	reqUrl := fmt.Sprintf(
+		"https://api.applicationinsights.io/beta/apps/%v/query?query=%v",
+		os.Getenv(appInsightsAppId),
+		url.QueryEscape(alert.QueryText))
 
 	client := &http.Client{}
-	req, errReq := http.NewRequest("GET", url, nil)
+	req, errReq := http.NewRequest("GET", reqUrl, nil)
 	req.Header.Add("x-api-key", os.Getenv(appInsightsKey))
 	res, errRes := client.Do(req)
 
 	if errRes != nil || errReq != nil || res.StatusCode != http.StatusOK {
+		fmt.Printf("Error requesting data %v %v", errRes, reqUrl)
 		resultsChan <- QueryResult{}
+		return
 	}
 
 	var qResults QueryResult

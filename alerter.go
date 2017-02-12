@@ -17,7 +17,7 @@ func main() {
 
 	})
 
-	alerts := []AlertModel{AlertModel{AlertType: "test"}}
+	alerts := []AlertModel{AlertModel{AlertType: "test", QueryText: "requests | top 10"}}
 	go StartAlertEngine(alerts)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
